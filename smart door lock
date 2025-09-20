@@ -1,0 +1,91 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <Keypad.h>
+#include <Servo.h>
+
+// ----- LCD -----
+LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C address may be 0x3F, change if needed
+
+// ----- Keypad -----
+const byte ROWS = 4; 
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+byte rowPins[ROWS] = {2, 3, 4, 5}; // R1-R4
+byte colPins[COLS] = {6, 7, 8, 10}; // C1-C4 (pin 8 also for buzzer!)
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+// ----- Servo & Buzzer -----
+Servo lockServo;
+const int servoPin = 9;
+const int buzzerPin = 11; // use pin 11 for buzzer to avoid overlap
+
+// ----- Password -----
+String password = "1234";   // default password
+String inputPass = "";
+
+void setup() {
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0,0);
+  lcd.print("Smart Lock System");
+
+  lockServo.attach(servoPin);
+  lockServo.write(0); // locked position
+
+  pinMode(buzzerPin, OUTPUT);
+  digitalWrite(buzzerPin, LOW);
+
+  delay(2000);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Enter Password:");
+}
+
+void loop() {
+  char key = keypad.getKey();
+  if (key) {
+    if (key == '#') {
+      checkPassword();
+    } else if (key == '*') {
+      inputPass = "";
+      lcd.clear();
+      lcd.print("Cleared");
+      delay(500);
+      lcd.clear();
+      lcd.print("Enter Password:");
+    } else {
+      inputPass += key;
+      lcd.setCursor(0,1);
+      lcd.print(inputPass);
+    }
+  }
+}
+
+void checkPassword() {
+  lcd.clear();
+  if (inputPass == password) {
+    lcd.print("Access Granted");
+    lockServo.write(90); // unlock
+    tone(buzzerPin, 1000, 200); // short beep
+    delay(5000); // keep unlocked for 5s
+    lockServo.write(0); // lock again
+    lcd.clear();
+    lcd.print("Enter Password:");
+  } else {
+    lcd.print("Access Denied!");
+    for (int i=0; i<3; i++) {
+      tone(buzzerPin, 500, 300);
+      delay(300);
+    }
+    delay(1000);
+    lcd.clear();
+    lcd.print("Enter Password:");
+  }
+  inputPass = "";
+}
