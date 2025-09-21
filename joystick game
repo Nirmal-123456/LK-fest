@@ -11,6 +11,7 @@ int servoXPos = 90;  // Start at center
 int servoYPos = 90;
 
 void setup() {
+  Serial.begin(9600);
   servoX.attach(9);   // Servo X on pin 9
   servoY.attach(10);  // Servo Y on pin 10
 }
