@@ -1,0 +1,31 @@
+#include <Servo.h>
+
+Servo flapServo;        // Servo to direct waste
+int moisturePin = A0;   // Soil moisture sensor analog pin
+int threshold = 400;    // Moisture threshold to differentiate wet/dry (adjust after testing)
+
+void setup() {
+  flapServo.attach(6);  // Connect servo signal to pin D6
+  flapServo.write(90);  // Initial position (center, neutral)
+  Serial.begin(9600);   // Optional: monitor moisture readings
+}
+
+void loop() {
+  int moistureValue = analogRead(moisturePin); // Read moisture sensor
+  Serial.print("Moisture Value: ");
+  Serial.println(moistureValue);
+
+  if (moistureValue > threshold) {
+    // Wet waste
+    Serial.println("Wet Waste Detected");
+    flapServo.write(180); // Rotate flap to wet compartment
+  } else {
+    // Dry waste
+    Serial.println("Dry Waste Detected");
+    flapServo.write(0);   // Rotate flap to dry compartment
+  }
+
+  delay(3000);           // Wait for waste to drop into the compartment
+  flapServo.write(90);   // Reset flap to center
+  delay(1000);           // Short pause before next reading
+}
