@@ -1,33 +1,47 @@
 #include <Servo.h>
 
-Servo servoX;
-Servo servoY;
+Servo servo1;
+Servo servo2;
+const int joyX = 0; // Analog pin for X-axis
+const int joyY = 1; // Analog pin for Y-axis
 
-int joyX = A0;  // Joystick X axis
-int joyY = A1;  // Joystick Y axis
+unsigned long previousMillis = 0; // Timer variable for Serial output
+const unsigned long interval = 500; // Interval for Serial output in milliseconds
 
-int xValue, yValue;
-int servoXPos = 90;  // Start at center
-int servoYPos = 90;
-
-void setup() {
-  Serial.begin(9600);
-  servoX.attach(9);   // Servo X on pin 9
-  servoY.attach(10);  // Servo Y on pin 10
+void setup()
+{
+  Serial.begin(9600); // Initialize serial communication at 9600 bps
+  servo1.attach(3);   // Connect servo1 to digital pin 3
+  servo2.attach(5);   // Connect servo2 to digital pin 5
 }
 
-void loop() {
-  // Read joystick
-  xValue = analogRead(joyX);
-  yValue = analogRead(joyY);
+void loop()
+{
+  int joyXVal = analogRead(joyX);
+  int joyYVal = analogRead(joyY);
 
-  // Map joystick (0–1023) → servo angle (0–180)
-  servoXPos = map(xValue, 0, 1023, 0, 180);
-  servoYPos = map(yValue, 0, 1023, 0, 180);
+  int servo1Pos = map(joyXVal, 0, 1023, 180, 130);
+  int servo2Pos = map(joyYVal, 0, 1023, 130, 180);
 
-  // Move servos
-  servoX.write(servoXPos);
-  servoY.write(servoYPos);
+  servo1.write(servo1Pos);
+  servo2.write(servo2Pos);
 
-  delay(15); // smooth movement
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval)
+  {
+    previousMillis = currentMillis;
+
+    Serial.print("Joystick X: ");
+    Serial.print(joyXVal);
+    Serial.print(" -> Servo1 Position: ");
+    Serial.println(servo1Pos);
+
+    Serial.print("Joystick Y: ");
+    Serial.print(joyYVal);
+    Serial.print(" -> Servo2 Position: ");
+    Serial.println(servo2Pos);
+  }
+
+  delay(50); // Small delay for stable servo movement
 }
+

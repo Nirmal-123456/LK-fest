@@ -1,28 +1,28 @@
-// Pins
-const int soundPin = A0; // Analog output of sound sensor
-const int ledPins[] = {3,4,5,6,7,8,9,10};
-const int numLEDs = 8;
+int soundsensor = 3;
+int leds[] = {7, 8, 9, 10}; // Array of LED pin numbers
+const int numLeds = sizeof(leds) / sizeof(leds[0]);
 
-void setup() {
-  for(int i=0; i<numLEDs; i++){
-    pinMode(ledPins[i], OUTPUT);
+void setup() 
+{ 
+  pinMode(soundsensor, INPUT);
+  for (int i = 0; i < numLeds; i++) {
+    pinMode(leds[i], OUTPUT);
   }
-  Serial.begin(9600); // optional for debugging
 }
 
-void loop() {
-  int soundLevel = analogRead(soundPin); // read sound level
-  Serial.println(soundLevel); // see values in serial monitor
-
-  // Map sound level to number of LEDs
-  int ledsToLight = map(soundLevel, 0, 1023, 0, numLEDs);
-
-  for(int i=0; i<numLEDs; i++){
-    if(i < ledsToLight){
-      digitalWrite(ledPins[i], HIGH);
-    } else {
-      digitalWrite(ledPins[i], LOW);
+void loop()
+{
+  int sensorvalue = digitalRead(soundsensor);
+  if (sensorvalue == 1)
+  {
+    for (int i = 0; i < numLeds; i++) {
+      digitalWrite(leds[i], HIGH);
     }
   }
-  delay(50); // smooth response
+  else
+  {
+    for (int i = 0; i < numLeds; i++) {
+      digitalWrite(leds[i], LOW);
+    }
+  }
 }
